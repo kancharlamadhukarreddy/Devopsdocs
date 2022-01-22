@@ -1,0 +1,89 @@
+//create.yml
+---
+ - hosts: production
+   user: root
+   tasks:
+    - name: create file
+      copy: dest=/abc.txt content='hi how are you'
+    - name: execute commad 'Date'
+      command: date
+    - name: updating packages
+      apt: name="*" state='latest'
+  
+
+
+ansible-playbook <play-bookname> --syntax-check  //executing the playbook
+
+ansible-playbook create.yml --syntax-check
+
+
+ansible-playbook <playbook name>                 //actuval exectuing of playbook
+
+//script.yml
+
+---
+ - hosts: production
+   user: root
+   tasks:
+    - name: execute commad 'Date'
+      command: date
+    - name: execute script on server
+      script: test_script.sh 
+
+//test_script
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install apache2 -y
+ansible-playbook script.yml
+
+//variable.yml
+---
+ - hosts: production
+   user: root
+   vars:
+    welcome_msg: 'welocome to ansible'
+   tasks:
+    - name: create file
+      copy: dest=./variable.txt content="{{welcome_msg}}"
+//ec2.yaml
+---
+ - hosts: localhost
+   user: root
+   tasks:
+    - name: Ec2 creation
+      ec2:
+        key_name: sridhar
+        instance_type: t2.micro
+        image: ami-0b0af3577fe5e3532
+        region: us-east-1
+        wait: yes
+        vpc_subnet_id: subnet-6f9d3530
+        assign_public_ip: yes
+
+
+//deploy.yml
+
+  - hosts: production
+   user: root
+   tasks:
+    - name: copy file
+      copy: src=files/index.html dest=/var/www/html/index.html
+
+---
+ - hosts: production
+   user: root
+   tasks:
+   - name: Install Nginx
+     apt: pkg=nginx state=installed update_cache=true
+     notify:
+      - Start Nginx
+
+  handlers:
+   - name: Start Nginx
+     service: name=nginx state=started
+
+Note: while performing cloud automation we need to do following step after completed User( need ful ec2 policy) in IAM 
+1) configure cli (aws configure)
+2) configure accces keyid and serect access key id while doing AWS configure
+3) write a playbook
+4) We need to install boto before executing playbook by using pip install boto . ( ubunntu will give suggestions for install pip client)
